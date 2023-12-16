@@ -104,8 +104,8 @@ def node_g(cSW, cSE, cNE, cNW):
 def node_f(cSW, cSE, cNE, cNW):
 
     area = compute_area(cSW[1], cSE[1], cNE[1], cNW[1])
-    print(numpy.shape(cSW[1]),numpy.shape(cNE[1]),numpy.shape(cSE[1]),numpy.shape(cNW[1]))
-    print(numpy.shape(cSW[0]),numpy.shape(cNE[0]),numpy.shape(cSE[0]),numpy.shape(cNW[0]))
+    #print(numpy.shape(cSW[1]),numpy.shape(cNE[1]),numpy.shape(cSE[1]),numpy.shape(cNW[1]))
+    #print(numpy.shape(cSW[0]),numpy.shape(cNE[0]),numpy.shape(cSE[0]),numpy.shape(cNW[0]))
     f = 1/(2*area) * ( (cSW[0]+cSE[0])*(cSE[1][:,:,1]-cSW[1][:,:,1]) \
                      + (cSE[0]+cNE[0])*(cNE[1][:,:,1]-cSE[1][:,:,1]) \
                      + (cNE[0]+cNW[0])*(cNW[1][:,:,1]-cNE[1][:,:,1]) \
@@ -220,24 +220,25 @@ def euler_step(mesh, dt, nt, nx, ny, alpha, qbot, qtop, qrgt, qlft):
         fD = node_f(cW,cell, cN, cNW) 
         gD = node_g(cW,cell, cN, cNW) 
 
-        print(numpy.shape(fA), numpy.shape(mesh.nE[1:-1,-1,0]))
-        f_bot[1:-1,-1] = (fA+qrgt*mesh.nE[1:-1,-1,0])/2
+       # print(numpy.shape(fA), numpy.shape(mesh.nE[1:-1,-1,0]))
+       # print(numpy.shape(qrgt),numpy.shape(mesh.nE[1:-1,-1,0]))
+        f_bot[1:-1,-1] = (fA[:,0]+qrgt*mesh.nE[1:-1,-1,0])/2
         f_rgt[1:-1,-1] = qrgt*mesh.nE[1:-1,-1,0]
-        f_lft[1:-1,-1] = (fA+fD)/2
-        f_top[1:-1,-1] = (fD+qrgt*mesh.nE[1:-1,-1,0])/2
+        f_lft[1:-1,-1] = (fA[:,0]+fD[:,0])/2
+        f_top[1:-1,-1] = (fD[:,0]+qrgt*mesh.nE[1:-1,-1,0])/2
 
-        g_bot[1:-1,-1] = (gA+qrgt*mesh.nE[1:-1,-1,1])/2
+        g_bot[1:-1,-1] = (gA[:,0]+qrgt*mesh.nE[1:-1,-1,1])/2
         g_rgt[1:-1,-1] = qrgt*mesh.nE[1:-1,-1,1]
-        g_lft[1:-1,-1] = (gA+gD)/2
-        g_top[1:-1,-1] = (gD+qrgt*mesh.nE[1:-1,-1,1])/2
+        g_lft[1:-1,-1] = (gA[:,0]+gD[:,0])/2
+        g_top[1:-1,-1] = (gD[:,0]+qrgt*mesh.nE[1:-1,-1,1])/2
 
 #       Borde superior
-        cell= [mesh.Tn[-1,1:-1],mesh.ctr[-1,1:-1]]
-        cS  = [mesh.Tn[-2,1:-1],mesh.ctr[-2,1:-1]]
-        cE  = [mesh.Tn[-1,2:],mesh.ctr[-1,2:]]
-        cW  = [mesh.Tn[-1,:-2],mesh.ctr[-1,:-2]]
-        cSW = [mesh.Tn[-2,:-2],mesh.ctr[-2,:-2]]
-        cSE = [mesh.Tn[-2,2:],mesh.ctr[-2,2:]]
+        cell= [mesh.Tn[[-1],1:-1],mesh.ctr[[-1],1:-1]]
+        cS  = [mesh.Tn[[-2],1:-1],mesh.ctr[[-2],1:-1]]
+        cE  = [mesh.Tn[[-1],2:],mesh.ctr[[-1],2:]]
+        cW  = [mesh.Tn[[-1],:-2],mesh.ctr[[-1],:-2]]
+        cSW = [mesh.Tn[[-2],:-2],mesh.ctr[[-2],:-2]]
+        cSE = [mesh.Tn[[-2],2:],mesh.ctr[[-2],2:]]
 
         fA = node_f(cSW,cS,cell,cW) 
         gA = node_g(cSW,cS,cell,cW) 
@@ -255,123 +256,123 @@ def euler_step(mesh, dt, nt, nx, ny, alpha, qbot, qtop, qrgt, qlft):
         g_top[-1,1:-1] = qtop*mesh.nN[-1,1:-1,1]
 
 #       Borde izquierdo
-        cell= [mesh.Tn[1:-1,0],mesh.ctr[1:-1,0]]
-        cN  = [mesh.Tn[2:,0],mesh.ctr[2:,0]]
-        cS  = [mesh.Tn[:-2,0],mesh.ctr[:-2,0]]
-        cE  = [mesh.Tn[1:-1,1],mesh.ctr[1:-1,1]]
-        cSE = [mesh.Tn[:-2,1],mesh.ctr[:-2,1]]
-        cNE = [mesh.Tn[2:,1],mesh.ctr[2:,1]]
+        cell= [mesh.Tn[1:-1,[0]],mesh.ctr[1:-1,[0]]]
+        cN  = [mesh.Tn[2:,[0]],mesh.ctr[2:,[0]]]
+        cS  = [mesh.Tn[:-2,[0]],mesh.ctr[:-2,[0]]]
+        cE  = [mesh.Tn[1:-1,[1]],mesh.ctr[1:-1,[1]]]
+        cSE = [mesh.Tn[:-2,[1]],mesh.ctr[:-2,[1]]]
+        cNE = [mesh.Tn[2:,[1]],mesh.ctr[2:,[1]]]
 
         fC = node_f(cell, cE, cNE, cN) 
         gC = node_g(cell, cE, cNE, cN) 
         fB = node_f(cS,cSE,cE,cell) 
         gB = node_g(cS,cSE,cE,cell) 
 
-        f_bot[1:-1,0] = (fB+qlft*mesh.nW[1:-1,0,0])/2
-        f_rgt[1:-1,0] = (fB+fC)/2
-        f_top[1:-1,0] = (fC+qlft*mesh.nW[1:-1,0,0])/2
+        f_bot[1:-1,0] = (fB[:,0]+qlft*mesh.nW[1:-1,0,0])/2
+        f_rgt[1:-1,0] = (fB[:,0]+fC[:,0])/2
+        f_top[1:-1,0] = (fC[:,0]+qlft*mesh.nW[1:-1,0,0])/2
         f_lft[1:-1,0] = qlft*mesh.nW[1:-1,0,0]
 
-        g_bot[1:-1,0] = (gB+qlft*mesh.nW[1:-1,0,1])/2
-        g_rgt[1:-1,0] = (gB+fC)/2
-        g_top[1:-1,0] = (gC+qlft*mesh.nW[1:-1,0,1])/2
+        g_bot[1:-1,0] = (gB[:,0]+qlft*mesh.nW[1:-1,0,1])/2
+        g_rgt[1:-1,0] = (gB[:,0]+fC[:,0])/2
+        g_top[1:-1,0] = (gC[:,0]+qlft*mesh.nW[1:-1,0,1])/2
         g_lft[1:-1,0] = qlft*mesh.nW[1:-1,0,1]
 
 #       Esquina inferior izquierda
-        cell= [mesh.Tn[0,0],mesh.ctr[0,0]]
-        cN  = [mesh.Tn[1,0],mesh.ctr[1,0]]
-        cE  = [mesh.Tn[0,1],mesh.ctr[0,1]]
-        cNE = [mesh.Tn[1,1],mesh.ctr[1,1]]
+        # cell= [mesh.Tn[0,0],mesh.ctr[0,0]]
+        # cN  = [mesh.Tn[1,0],mesh.ctr[1,0]]
+        # cE  = [mesh.Tn[0,1],mesh.ctr[0,1]]
+        # cNE = [mesh.Tn[1,1],mesh.ctr[1,1]]
 
-        fC = node_f(cell, cE, cNE, cN) 
-        gC = node_g(cell, cE, cNE, cN) 
+        # fC = node_f(cell, cE, cNE, cN) 
+        # gC = node_g(cell, cE, cNE, cN) 
 
-        f_bot[0,0] = qbot*mesh.nS[0,0,0]
-        f_lft[0,0] = qlft*mesh.nW[0,0,0]
-        f_rgt[0,0] = (fC+qbot*mesh.nS[0,0,0])/2
-        f_top[0,0] = (fC+qlft*mesh.nW[0,0,0])/2
+        # f_bot[0,0] = qbot*mesh.nS[0,0,0]
+        # f_lft[0,0] = qlft*mesh.nW[0,0,0]
+        # f_rgt[0,0] = (fC+qbot*mesh.nS[0,0,0])/2
+        # f_top[0,0] = (fC+qlft*mesh.nW[0,0,0])/2
 
-        g_bot[0,0] = qbot*mesh.nS[0,0,1]
-        g_lft[0,0] = qlft*mesh.nW[0,0,1]
-        g_rgt[0,0] = (gC+qbot*mesh.nS[0,0,1])/2
-        g_top[0,0] = (gC+qlft*mesh.nW[0,0,1])/2
-
-
-
-        for j in range(ny):
-            for i in range(nx):
+        # g_bot[0,0] = qbot*mesh.nS[0,0,1]
+        # g_lft[0,0] = qlft*mesh.nW[0,0,1]
+        # g_rgt[0,0] = (gC+qbot*mesh.nS[0,0,1])/2
+        # g_top[0,0] = (gC+qlft*mesh.nW[0,0,1])/2
 
 
-                cell = mesh[j,i]
 
-                if i==0 and j==0:  # esquina inferior izquierda
-                    cN  = mesh[j+1,i]
-                    cE  = mesh[j,i+1]
-                    cNE = mesh[j+1,i+1]
-                    fC = node_f(cell, cE, cNE, cN) 
-                    gC = node_g(cell, cE, cNE, cN) 
-
-                    f_bot = qbot*cell.nS[0]
-                    f_lft = qlft*cell.nW[0]
-                    f_rgt = (fC+qbot*cell.nS[0])/2
-                    f_top = (fC+qlft*cell.nW[0])/2
-
-                    g_bot = qbot*cell.nS[1]
-                    g_lft = qlft*cell.nW[1]
-                    g_rgt = (gC+qbot*cell.nS[1])/2
-                    g_top = (gC+qlft*cell.nW[1])/2
-
-                elif i==nx-1 and j==0: # esquina inferior derecha
-                    cN  = mesh[j+1,i]
-                    cW  = mesh[j,i-1]
-                    cNW = mesh[j+1,i-1]
-                    fD = node_f(cW,cell, cN, cNW) 
-                    gD = node_g(cW,cell, cN, cNW) 
-
-                    f_bot = qbot*cell.nS[0]
-                    f_rgt = qrgt*cell.nE[0]
-                    f_lft = (fD+qbot*cell.nS[0])/2
-                    f_top = (fD+qrgt*cell.nE[0])/2
-
-                    g_bot = qbot*cell.nS[1]
-                    g_rgt = qrgt*cell.nE[1]
-                    g_lft = (gD+qbot*cell.nS[1])/2
-                    g_top = (gD+qrgt*cell.nE[1])/2
+        # for j in range(ny):
+        #     for i in range(nx):
 
 
-                elif i==0 and j==ny-1: # esquina superior izquierda
-                    cS  = mesh[j-1,i]
-                    cE  = mesh[j,i+1]
-                    cSE = mesh[j-1,i+1]
-                    fB = node_f(cS,cSE,cE,cell) 
-                    gB = node_g(cS,cSE,cE,cell) 
+        #         cell = mesh[j,i]
 
-                    f_bot = (fB+qlft*cell.nW[0])/2
-                    f_rgt = (fB+qtop*cell.nN[0])/2
-                    f_lft = qlft*cell.nW[0]
-                    f_top = qtop*cell.nN[0]
+        #         if i==0 and j==0:  # esquina inferior izquierda
+        #             cN  = mesh[j+1,i]
+        #             cE  = mesh[j,i+1]
+        #             cNE = mesh[j+1,i+1]
+        #             fC = node_f(cell, cE, cNE, cN) 
+        #             gC = node_g(cell, cE, cNE, cN) 
 
-                    g_bot = (gB+qlft*cell.nW[1])/2
-                    g_rgt = (gB+qtop*cell.nN[1])/2
-                    g_lft = qlft*cell.nW[1]
-                    g_top = qtop*cell.nN[1]
+        #             f_bot = qbot*cell.nS[0]
+        #             f_lft = qlft*cell.nW[0]
+        #             f_rgt = (fC+qbot*cell.nS[0])/2
+        #             f_top = (fC+qlft*cell.nW[0])/2
 
-                elif i==nx-1 and j==ny-1: # esquina superior derecha
-                    cS  = mesh[j-1,i]
-                    cW  = mesh[j,i-1]
-                    cSW = mesh[j-1,i-1]
-                    fA = node_f(cSW,cS,cell,cW) 
-                    gA = node_g(cSW,cS,cell,cW) 
+        #             g_bot = qbot*cell.nS[1]
+        #             g_lft = qlft*cell.nW[1]
+        #             g_rgt = (gC+qbot*cell.nS[1])/2
+        #             g_top = (gC+qlft*cell.nW[1])/2
 
-                    f_bot = (fA+qrgt*cell.nE[0])/2
-                    f_rgt = qrgt*cell.nE[0]
-                    f_lft = (fA+qtop*cell.nN[0])/2
-                    f_top = qtop*cell.nN[0]
+        #         elif i==nx-1 and j==0: # esquina inferior derecha
+        #             cN  = mesh[j+1,i]
+        #             cW  = mesh[j,i-1]
+        #             cNW = mesh[j+1,i-1]
+        #             fD = node_f(cW,cell, cN, cNW) 
+        #             gD = node_g(cW,cell, cN, cNW) 
 
-                    g_bot = (gA+qrgt*cell.nE[1])/2
-                    g_rgt = qrgt*cell.nE[1]
-                    g_lft = (gA+qtop*cell.nN[1])/2
-                    g_top = qtop*cell.nN[1]
+        #             f_bot = qbot*cell.nS[0]
+        #             f_rgt = qrgt*cell.nE[0]
+        #             f_lft = (fD+qbot*cell.nS[0])/2
+        #             f_top = (fD+qrgt*cell.nE[0])/2
+
+        #             g_bot = qbot*cell.nS[1]
+        #             g_rgt = qrgt*cell.nE[1]
+        #             g_lft = (gD+qbot*cell.nS[1])/2
+        #             g_top = (gD+qrgt*cell.nE[1])/2
+
+
+        #         elif i==0 and j==ny-1: # esquina superior izquierda
+        #             cS  = mesh[j-1,i]
+        #             cE  = mesh[j,i+1]
+        #             cSE = mesh[j-1,i+1]
+        #             fB = node_f(cS,cSE,cE,cell) 
+        #             gB = node_g(cS,cSE,cE,cell) 
+
+        #             f_bot = (fB+qlft*cell.nW[0])/2
+        #             f_rgt = (fB+qtop*cell.nN[0])/2
+        #             f_lft = qlft*cell.nW[0]
+        #             f_top = qtop*cell.nN[0]
+
+        #             g_bot = (gB+qlft*cell.nW[1])/2
+        #             g_rgt = (gB+qtop*cell.nN[1])/2
+        #             g_lft = qlft*cell.nW[1]
+        #             g_top = qtop*cell.nN[1]
+
+        #         elif i==nx-1 and j==ny-1: # esquina superior derecha
+        #             cS  = mesh[j-1,i]
+        #             cW  = mesh[j,i-1]
+        #             cSW = mesh[j-1,i-1]
+        #             fA = node_f(cSW,cS,cell,cW) 
+        #             gA = node_g(cSW,cS,cell,cW) 
+
+        #             f_bot = (fA+qrgt*cell.nE[0])/2
+        #             f_rgt = qrgt*cell.nE[0]
+        #             f_lft = (fA+qtop*cell.nN[0])/2
+        #             f_top = qtop*cell.nN[0]
+
+        #             g_bot = (gA+qrgt*cell.nE[1])/2
+        #             g_rgt = qrgt*cell.nE[1]
+        #             g_lft = (gA+qtop*cell.nN[1])/2
+        #             g_top = qtop*cell.nN[1]
 
                                       
     mesh.T[:,:] = mesh.Tn[:,:] + alpha*dt/mesh.area[:,:] * \
@@ -386,7 +387,7 @@ def euler_step(mesh, dt, nt, nx, ny, alpha, qbot, qtop, qrgt, qlft):
                    
 
 alpha = 0.1
-T0 = 0.
+T0 = 20.
 Tb = 300.
 
 qbot = 10.
@@ -401,7 +402,7 @@ theta = 15*numpy.pi/180.
 nx = 15
 ny = 10
 
-dt = 0.0001
+dt = 0.001
 nt = 500
 
 sigma = alpha*dt/(Lx/nx)**2
@@ -413,18 +414,18 @@ initial_conditions(mesh, T0, Tb)
 
 euler_step(mesh, dt, nt, nx, ny, alpha, qbot, qtop, qrgt, qlft)
 
-center = numpy.zeros((ny,nx,2))
-T = numpy.zeros((ny,nx))
-for j in range(ny):
-    for i in range(nx):
-        center[j,i,:] = mesh[j,i].ctr
-        T[j,i] = mesh[j,i].T
+# center = numpy.zeros((ny,nx,2))
+# T = numpy.zeros((ny,nx))
+# for j in range(ny):
+#     for i in range(nx):
+#         center[j,i,:] = mesh.ctr[j,i]
+#         T[j,i] = mesh.ctr[j,i].T
 
 #pyplot.pcolor(center[:,:,0],center[:,:,1],T)
-pyplot.contourf(center[:,:,0],center[:,:,1],T)
-a = center[:,nx/2,0]
-b= center[:,nx/2,1]
-c = T[:,nx/2]
+pyplot.contourf(mesh.ctr[:,:,0],mesh.ctr[:,:,1],mesh.T)
+# a = center[:,nx/2,0]
+# b= center[:,nx/2,1]
+# c = T[:,nx/2]
 #pyplot.plot(b,c)
 pyplot.colorbar()
 pyplot.show()
